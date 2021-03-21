@@ -78,7 +78,14 @@ def findScoresToChange(curCounts, normalizedCounts):
     differencesToFix = normalizedCounts - curCounts
     if (np.sum(differencesToFix) != 0):
         return
+
+    # keep track of changes to make to the rankings
+    # the first value will change to the second, and it is 0 indexed
+    # changeMap[0,1] = 1 means change 1 ranking if 1 to a 2
     changeMap = np.empty((10, 10)).astype(int)
+
+    # keep track of what the counts of each ranking will be after making these changes
+    newCounts = np.copy(curCounts)
 
     # for all values that may need to be changed
     for i in range(len(curCounts)):
@@ -87,23 +94,31 @@ def findScoresToChange(curCounts, normalizedCounts):
         while ( np.sign(differencesToFix[i]) != 0):
             direction = np.sign(differencesToFix[i])
 
-            # for all higher ratiings that we're still allowed to change
+            # for all higher ratings that we're still allowed to change
             for j in range(i + 1, len(curCounts)):
                 # If the change needed for this ranking is the opposite as from the previous
                 if -1 * direction * differencesToFix[j] > 0:
-                    if direction > 0:
-                        changeMap[j][i] += 1
-                    else :
-                        changeMap[i][j] += 1
+                    changeDirection = (j, i) if direction > 0 else (i, j)
+                     # check that there are still entries with this rank to pull from
+                    if (newCounts[changeDirection[0]] <= 0):
+                        continue
+
+                    changeMap[changeDirection[0]][changeDirection[1]] += 1
+
+                    # update the number of rankins that still need to be adjusted
                     differencesToFix[j] += direction
                     differencesToFix[i] += -1 * direction
+
+                    # update the running count of the new counts of each ranking
+                    newCounts[j] += direction
+                    newCounts[i] += -1 * direction
                     break
 
     changes = np.argwhere(changeMap > 0)
     for change in changes:
         numChanges = changeMap[change[0]][change[1]]
         if numChanges > 10000 or numChanges < 0:
-            # handle numpy prevision errors
+            # handle numpy precision errors
             continue
 
         print ("Change %s Ranking(s) of %d to a %d" % (numChanges, change[0] + 1, change[1] + 1))
