@@ -66,6 +66,48 @@ def cleanNormalDistributionCounts(rawScores, numEntriesToRank, samplesGenerated)
 
 
 
+'''
+    Iterate through differences betwee nhe normal distribution and the current
+    distribution to print a list of instructions for change scores to match the
+    normal distribution
+'''
+def findScoresToChange(curCounts, normalizedCounts):
+    separator = '\n' + '-' * 55 + '\n'
+    print (separator + 'Changes to make to normalize your ranking distribution:' + separator)
+    total_offset = 0
+    differencesToFix = normalizedCounts - curCounts
+    if (np.sum(differencesToFix) != 0):
+        return
+    changeMap = np.empty((10, 10)).astype(int)
+
+    # for all values that may need to be changed
+    for i in range(len(curCounts)):
+
+        # look for changes 1 index at a time
+        while ( np.sign(differencesToFix[i]) != 0):
+            direction = np.sign(differencesToFix[i])
+
+            # for all higher ratiings that we're still allowed to change
+            for j in range(i + 1, len(curCounts)):
+                # If the change needed for this ranking is the opposite as from the previous
+                if -1 * direction * differencesToFix[j] > 0:
+                    if direction > 0:
+                        changeMap[j][i] += 1
+                    else :
+                        changeMap[i][j] += 1
+                    differencesToFix[j] += direction
+                    differencesToFix[i] += -1 * direction
+                    break
+
+    changes = np.argwhere(changeMap > 0)
+    for change in changes:
+        numChanges = changeMap[change[0]][change[1]]
+        if numChanges > 10000 or numChanges < 0:
+            # handle numpy prevision errors
+            continue
+
+        print ("Change %s Ranking(s) of %d to a %d" % (numChanges, change[0] + 1, change[1] + 1))
+    print separator
 
 def printChangeMessage(diff):
     separator = '\n' + '-' * 55 + '\n'
@@ -148,6 +190,8 @@ if __name__ == "__main__":
 
 
     printChangeMessage(diff)
+
+    findScoresToChange(curCounts, normalizedCounts)
     
     # Print sorted list of entries
     # entryList = list (map(lambda x: x.__str__(), entryList))
