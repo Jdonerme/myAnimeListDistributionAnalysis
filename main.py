@@ -6,7 +6,7 @@ from xmlParser import parseExportList
 
 def getCurrentDistribution(scores, showGraph = True):
     hist, bin_edges = np.histogram(scores, density=True)
-    unique, counts= np.unique(scores, return_counts=True)
+    counts = getCountOfEachRanking(scores)
 
     if showGraph:
         plt.hist(scores, bins=10)
@@ -20,7 +20,7 @@ def getIdealizedHist(scores, showGraph = True):
     ideal_dist =  np.round(np.random.normal(avg, std, samples))
     temp = ideal_dist[ ideal_dist > 10 ].size
     ideal_dist = list (map(lambda x: 10 if x > 10 else 1 if x < 1 else np.round(x), ideal_dist))
-    unique, counts= np.unique(ideal_dist, return_counts=True)
+    counts = getCountOfEachRanking(ideal_dist)
 
     counts = np.round(1.0 * len(scores) * counts / samples)
 
@@ -54,6 +54,18 @@ def verifyTotalScores(scoreDistribution):
        totalPoints += (i+1) * scoreDistribution[i]
     return totalPoints
 
+def getCountOfEachRanking(scores):
+    unique, counts= np.unique(scores, return_counts=True)
+    # we need to sanitize to ensure that all possible scores are represented.
+    # if some number doesn't appear, we assign a count of 0
+    rankings = range(1, 11)
+
+    countDict = dict(zip(unique, counts))
+    for r in rankings:
+        if not r in countDict:
+            countDict[r] = 0
+    return np.array(list (map(lambda r: countDict[r], rankings)))
+
 if __name__ == "__main__":
     file = sys.argv[1] if len(sys.argv) > 1 else "/Users/jdonerme/Downloads/mangalist_1610817958_-_10386609.xml"
     showGraph = True if len(sys.argv) > 2 else False
@@ -69,7 +81,7 @@ if __name__ == "__main__":
     curCounts = getCurrentDistribution(scores, showGraph)
     idealCounts = getIdealizedHist(scores, showGraph)
     idealCounts *= (1.0 * np.sum(curCounts) / np.sum(idealCounts))
-    idealCounts = np.round(idealCounts)
+    idealCounts = np.rint(idealCounts).astype(int)
 
     print ('current counts')
     print curCounts
