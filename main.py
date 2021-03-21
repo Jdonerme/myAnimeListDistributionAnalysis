@@ -1,4 +1,4 @@
-import sys
+import random, sys
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import truncnorm
@@ -27,7 +27,8 @@ def getNormalizedDistribution(scores, showGraph = True):
     normalized_dist = list (map(lambda x: 10 if x > 10 else 1 if x < 1 else np.round(x), normalized_dist))
     counts = getCountOfEachRanking(normalized_dist)
 
-    counts = np.round(1.0 * len(scores) * counts / samples)
+    numEntriesToRank = len(scores)
+    counts = cleanNormalDistributionCounts(counts, numEntriesToRank, samples)
 
     if showGraph:
         normalizedScores = np.repeat(range(1, 11), counts.astype(int))
@@ -37,6 +38,31 @@ def getNormalizedDistribution(scores, showGraph = True):
         plt.ylabel('Number of Scores')
         plt.show()
     return counts
+
+'''
+    Since the normal dist entries are being generated randomly and then normalized,
+    it is possible that the scores we generate won't exactly match the number of entries
+    that should be scored.
+    In that case, we add / subtract values from the distribution as needed.
+'''
+def cleanNormalDistributionCounts(rawScores, numEntriesToRank, samplesGenerated):
+    counts = np.round(1.0 * numEntriesToRank * rawScores / samplesGenerated)
+    countDifference = numEntriesToRank - np.sum(counts)
+
+    scoreDist = np.repeat(range(10), rawScores.astype(int))
+    # if we need to rank more entries
+    while countDifference > 0:
+        scoreToAdd = random.choice(scoreDist)
+        counts[scoreToAdd] += 1
+        countDifference -= 1
+    # if we've ranked too many entries
+    while countDifference < 0:
+        scoreToDrop = random.choice(scoreDist)
+        counts[scoreToDrop] -= 1
+        countDifference += 1
+    return counts
+
+
 
 
 def printChangeMessage(diff):
@@ -115,6 +141,7 @@ if __name__ == "__main__":
     if (np.sum(diff) != 0):
         print ('Difference Between Number of Entries Rahnked for Normalized Distribution vs Current')
         print np.sum(diff)
+        print ('2349034') * 25
 
 
 

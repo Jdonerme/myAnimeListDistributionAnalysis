@@ -1,2 +1,2 @@
 Improve the printChangeMessage to include which scores should be changed to make the suggested printChangeMessage
-try replacing the current form of the ideal distribution with a truncated normal distribution
+remove magic numbers for upper / lower bounds
