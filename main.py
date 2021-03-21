@@ -26,9 +26,9 @@ def getIdealizedHist(scores, showGraph = True):
 
 
     print ("\navg: %s std: %s \n" %(avg, std))
-
     if showGraph:
-        count, bins, ignored = plt.hist(ideal_dist, 10, range=[1,10])
+        idealScores = np.repeat(range(1, 11), counts.astype(int))
+        plt.hist(idealScores, range=[1,10])
         plt.title('idealized')
         plt.show()
     return counts
