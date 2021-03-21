@@ -16,21 +16,21 @@ def getCurrentDistribution(scores, showGraph = True):
         plt.show()
     return counts
 
-def getIdealizedHist(scores, showGraph = True):
+def getNormalizedDistribution(scores, showGraph = True):
     std, avg  = np.std(scores), np.mean(scores)
     samples = 1000000
-    ideal_dist =  np.round(np.random.normal(avg, std, samples))
-    temp = ideal_dist[ ideal_dist > 10 ].size
-    ideal_dist = list (map(lambda x: 10 if x > 10 else 1 if x < 1 else np.round(x), ideal_dist))
-    counts = getCountOfEachRanking(ideal_dist)
+    normalized_dist =  np.round(np.random.normal(avg, std, samples))
+    temp = normalized_dist[ normalized_dist > 10 ].size
+    normalized_dist = list (map(lambda x: 10 if x > 10 else 1 if x < 1 else np.round(x), normalized_dist))
+    counts = getCountOfEachRanking(normalized_dist)
 
     counts = np.round(1.0 * len(scores) * counts / samples)
 
 
     print ("\navg: %s std: %s \n" %(avg, std))
     if showGraph:
-        idealScores = np.repeat(range(1, 11), counts.astype(int))
-        plt.hist(idealScores, range=[1,10])
+        normalizedScores = np.repeat(range(1, 11), counts.astype(int))
+        plt.hist(normalizedScores, range=[1,10])
         plt.title('Normalized Ranking Distribution')
         plt.xlabel('Ranking')
         plt.ylabel('Number of Scores')
@@ -83,17 +83,17 @@ if __name__ == "__main__":
 
     # get distributions
     curCounts = getCurrentDistribution(scores, showGraph)
-    idealCounts = getIdealizedHist(scores, showGraph)
-    idealCounts *= (1.0 * np.sum(curCounts) / np.sum(idealCounts))
-    idealCounts = np.rint(idealCounts).astype(int)
+    normalizedCounts = getNormalizedDistribution(scores, showGraph)
+    normalizedCounts *= (1.0 * np.sum(curCounts) / np.sum(normalizedCounts))
+    normalizedCounts = np.rint(normalizedCounts).astype(int)
 
     print ('current counts')
     print curCounts
 
-    print ('ideal counts')
-    print (idealCounts)
+    print ('normalized counts')
+    print (normalizedCounts)
 
-    diff = idealCounts - curCounts
+    diff = normalizedCounts - curCounts
 
     print ('difference')
     print (diff)
@@ -112,8 +112,8 @@ if __name__ == "__main__":
 
     ## todo replace with https://stackoverflow.com/questions/41316068/truncated-normal-distribution-with-scipy-in-python
     verifyCur = verifyTotalScores(curCounts)
-    verifyIdeal = verifyTotalScores(idealCounts)
+    verifyNormalized = verifyTotalScores(normalizedCounts)
 
-    print np.sum(scores), verifyCur, verifyIdeal
+    print np.sum(scores), verifyCur, verifyNormalized
 
-    print np.sum(curCounts), np.sum(idealCounts)
+    print np.sum(curCounts), np.sum(normalizedCounts)
