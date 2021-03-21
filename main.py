@@ -1,28 +1,8 @@
-import xml.etree.ElementTree as ET
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import truncnorm
-from Entry import Entry
-
-def mangaParse(mangeFile):
-    root = ET.parse(file).getroot()
-    mangaList = []
-    # parse manga
-    for mangaListing in root.findall('manga'):
-        if mangaListing.tag != 'manga':
-            continue
-        # for mangaAttribute in mangaListing:
-            # if mangaAttribute.tag == 'manga_title':
-        title = mangaListing.find('manga_title').text
-        score = int(mangaListing.find('my_score').text)
-        prio = mangaListing.find('my_priority').text 
-        manga_id = mangaListing.find('manga_mangadb_id').text
-        {manga_id}
-        if score > 0:
-            entry = Entry(manga_id, score, prio, title)
-            mangaList.append(entry)
-    return mangaList
+from xmlParser import parseExportList
 
 def getCurrentDistribution(scores, showGraph = True):
     hist, bin_edges = np.histogram(scores, density=True)
@@ -78,7 +58,7 @@ if __name__ == "__main__":
     file = sys.argv[1] if len(sys.argv) > 1 else "/Users/jdonerme/Downloads/mangalist_1610817958_-_10386609.xml"
     showGraph = True if len(sys.argv) > 2 else False
 
-    mangaList = mangaParse(file)
+    mangaList = parseExportList(file)
     # Sort
     mangaList.sort(reverse=True)
 

@@ -1,11 +1,11 @@
 
-prioMap = {'High': 2, "Medium": 1, "Low": 0}
+prioMap = {'HIGH': 2, "MEDIUM": 1, "LOW": 0}
 
 class Entry(object):
     def __init__(self, idString, score, prio, title):
         self.id = idString
         self.score = score
-        self.prio = prio
+        self.prio = prio.upper()
         self.title = title
 
     def __cmp__(self, other):
