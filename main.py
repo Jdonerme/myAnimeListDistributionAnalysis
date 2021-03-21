@@ -103,7 +103,8 @@ def findScoresToChange(curCounts, normalizedCounts):
                     if (newCounts[changeDirection[0]] <= 0):
                         continue
 
-                    changeMap[changeDirection[0]][changeDirection[1]] += 1
+                    for k in range(changeDirection[0], changeDirection[1], -1 * direction):
+                        changeMap[k][k - 1 * direction] += 1
 
                     # update the number of rankins that still need to be adjusted
                     differencesToFix[j] += direction
