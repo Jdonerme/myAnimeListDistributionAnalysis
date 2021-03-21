@@ -26,8 +26,6 @@ def getNormalizedDistribution(scores, showGraph = True):
 
     counts = np.round(1.0 * len(scores) * counts / samples)
 
-
-    print ("\navg: %s std: %s \n" %(avg, std))
     if showGraph:
         normalizedScores = np.repeat(range(1, 11), counts.astype(int))
         plt.hist(normalizedScores, range=[1,10])
@@ -39,6 +37,8 @@ def getNormalizedDistribution(scores, showGraph = True):
 
 
 def printChangeMessage(diff):
+    separator = '\n' + '-' * 55 + '\n'
+    print (separator + 'Changes to make to normalize your ranking distribution:' + separator) 
     for i in range (len(diff)):
         quantifier = ''
         if (diff[i] > 0):
@@ -50,6 +50,7 @@ def printChangeMessage(diff):
         plural = 's' if abs(diff[i]) != 1 else ''
         message = "%s %d score%s of %d " % (quantifier, abs(diff[i]), plural, i + 1)
         print (message)
+    print ('\n')
 
 
 def verifyTotalScores(scoreDistribution):
@@ -74,12 +75,15 @@ if __name__ == "__main__":
     file = sys.argv[1] if len(sys.argv) > 1 else "/Users/jdonerme/Downloads/mangalist_1610817958_-_10386609.xml"
     showGraph = True if len(sys.argv) > 2 else False
 
-    mangaList = parseExportList(file)
+    entryList = parseExportList(file)
     # Sort
-    mangaList.sort(reverse=True)
+    entryList.sort(reverse=True)
 
     # get a list of all the scores
-    scores = list (map(lambda x: x.score, mangaList))
+    scores = list (map(lambda x: x.score, entryList))
+
+    std, avg  = np.round(np.std(scores), 3), np.round(np.mean(scores),3)
+    print ("\nAverage Score: %s\nStandard Deviation of Scores: %s \n" %(avg, std))
 
     # get distributions
     curCounts = getCurrentDistribution(scores, showGraph)
@@ -87,33 +91,38 @@ if __name__ == "__main__":
     normalizedCounts *= (1.0 * np.sum(curCounts) / np.sum(normalizedCounts))
     normalizedCounts = np.rint(normalizedCounts).astype(int)
 
-    print ('current counts')
+    print ('Current Count of Each Ranking:')
     print curCounts
 
-    print ('normalized counts')
+    print ('Count of Each Ranking in Normalized Distribution:')
     print (normalizedCounts)
 
     diff = normalizedCounts - curCounts
 
-    print ('difference')
+    print ('Difference Between Normalized Distribution Ranking Counts and Current Ranking Counts')
     print (diff)
-    print np.sum(diff)
+    if (np.sum(diff) != 0):
+        print ('Difference Between Number of Entries Rahnked for Normalized Distribution vs Current')
+        print np.sum(diff)
 
-    print ('\nchanges to make:')
-    print ('-' * 25)
+
 
     printChangeMessage(diff)
     
-    # mangaList = list (map(lambda x: x.__str__(), mangaList))
-    # print "'}\n{name: '".join(mangaList)
+    # Print sorted list of entries
+    # entryList = list (map(lambda x: x.__str__(), entryList))
+    # print "'}\n{name: '".join(entryList)
     
 
     ## validation
 
-    ## todo replace with https://stackoverflow.com/questions/41316068/truncated-normal-distribution-with-scipy-in-python
+    ## todo: replace ideal dist with truncated normal dist with https://stackoverflow.com/questions/41316068/truncated-normal-distribution-with-scipy-in-python
     verifyCur = verifyTotalScores(curCounts)
     verifyNormalized = verifyTotalScores(normalizedCounts)
 
-    print np.sum(scores), verifyCur, verifyNormalized
-
-    print np.sum(curCounts), np.sum(normalizedCounts)
+    if (verifyCur != np.sum(scores)):
+        print "Warning: The Sum of Scores for the Current Distribution is Wrong"
+    
+    if (verifyNormalized != verifyCur):
+        print "Difference in the Total Number of Points Allocated by the Normal Distribution vs the Current Rankings"
+        print verifyNormalized - verifyCur
