@@ -3,32 +3,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import truncnorm
-
-
-prioMap = {'High': 2, "Medium": 1, "Low": 0}
-
-def mangaSort(m1, m2, includePrio=True):
-    # rank by scores first
-    if m1.score != m2.score or not includePrio:
-        return m1.score > m2.score
-    return prioMap[m1.prio] > prioMap[m2.prio]
-
-def mangaSortScore(manga, includePrio=True):
-    score = 10 * manga.score
-    if (includePrio):
-        score += prioMap[manga.prio]
-    return score
-
-class Manga(object):
-    def __init__(self, idString, score, prio, title):
-        self.id = idString
-        self.score = score
-        self.prio = prio
-        self.title = title
-
-    # formats the output when printing the song as a string
-    def __str__(self):
-        return u"%s (%s)".encode('utf-8').strip() % (self.title, self.id)
+from Entry import Entry
 
 def mangaParse(mangeFile):
     root = ET.parse(file).getroot()
@@ -45,7 +20,7 @@ def mangaParse(mangeFile):
         manga_id = mangaListing.find('manga_mangadb_id').text
         {manga_id}
         if score > 0:
-            entry = Manga(manga_id, score, prio, title)
+            entry = Entry(manga_id, score, prio, title)
             mangaList.append(entry)
     return mangaList
 
@@ -105,7 +80,7 @@ if __name__ == "__main__":
 
     mangaList = mangaParse(file)
     # Sort
-    mangaList.sort(key=mangaSortScore, reverse=True)
+    mangaList.sort(reverse=True)
 
     # get a list of all the scores
     scores = list (map(lambda x: x.score, mangaList))
