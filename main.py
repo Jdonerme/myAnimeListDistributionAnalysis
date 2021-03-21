@@ -9,8 +9,10 @@ def getCurrentDistribution(scores, showGraph = True):
     counts = getCountOfEachRanking(scores)
 
     if showGraph:
-        plt.hist(scores, bins=10)
-        plt.title('current dist')
+        plt.hist(scores, range=[1,10])
+        plt.title('Current Ranking Distribution')
+        plt.xlabel('Ranking')
+        plt.ylabel('Number of Scores')
         plt.show()
     return counts
 
@@ -29,7 +31,9 @@ def getIdealizedHist(scores, showGraph = True):
     if showGraph:
         idealScores = np.repeat(range(1, 11), counts.astype(int))
         plt.hist(idealScores, range=[1,10])
-        plt.title('idealized')
+        plt.title('Normalized Ranking Distribution')
+        plt.xlabel('Ranking')
+        plt.ylabel('Number of Scores')
         plt.show()
     return counts
 
