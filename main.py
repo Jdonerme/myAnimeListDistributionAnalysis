@@ -4,6 +4,9 @@ import numpy as np
 from scipy.stats import truncnorm
 from xmlParser import parseExportList
 
+def usage():
+    msg = "\nusage: python main.py MyAnimeListExportFile.xml (optionalGraphFlag)\n"
+    print msg
 def getCurrentDistribution(scores, showGraph = True):
     hist, bin_edges = np.histogram(scores, density=True)
     counts = getCountOfEachRanking(scores)
@@ -72,10 +75,18 @@ def getCountOfEachRanking(scores):
     return np.array(list (map(lambda r: countDict[r], rankings)))
 
 if __name__ == "__main__":
-    file = sys.argv[1] if len(sys.argv) > 1 else "/Users/jdonerme/Downloads/mangalist_1610817958_-_10386609.xml"
+    if not len(sys.argv) > 1:
+        usage()
+        exit()
+    file = sys.argv[1]
     showGraph = True if len(sys.argv) > 2 else False
 
-    entryList = parseExportList(file)
+    try:
+        entryList = parseExportList(file)
+    except:
+        usage()
+        exit()
+    
     # Sort
     entryList.sort(reverse=True)
 
