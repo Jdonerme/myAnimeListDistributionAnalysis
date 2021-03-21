@@ -4,6 +4,9 @@ import numpy as np
 from scipy.stats import truncnorm
 from xmlParser import parseExportList
 
+MAX_SCORE = 10
+MIN_SCORE = 1
+
 def usage():
     msg = "\nusage: python main.py MyAnimeListExportFile.xml (optionalGraphFlag)\n"
     print msg
@@ -12,7 +15,7 @@ def getCurrentDistribution(scores, showGraph = True):
     counts = getCountOfEachRanking(scores)
 
     if showGraph:
-        plt.hist(scores, range=[1,10])
+        plt.hist(scores, range=[MIN_SCORE, MAX_SCORE])
         plt.title('Current Ranking Distribution')
         plt.xlabel('Ranking')
         plt.ylabel('Number of Scores')
@@ -23,16 +26,15 @@ def getNormalizedDistribution(scores, showGraph = True):
     std, avg  = np.std(scores), np.mean(scores)
     samples = 1000000
     normalized_dist =  np.round(np.random.normal(avg, std, samples))
-    temp = normalized_dist[ normalized_dist > 10 ].size
-    normalized_dist = list (map(lambda x: 10 if x > 10 else 1 if x < 1 else np.round(x), normalized_dist))
+    normalized_dist = list (map(lambda x: MAX_SCORE if x > MAX_SCORE else MIN_SCORE if x < MIN_SCORE else np.round(x), normalized_dist))
     counts = getCountOfEachRanking(normalized_dist)
 
     numEntriesToRank = len(scores)
     counts = cleanNormalDistributionCounts(counts, numEntriesToRank, samples)
 
     if showGraph:
-        normalizedScores = np.repeat(range(1, 11), counts.astype(int))
-        plt.hist(normalizedScores, range=[1,10])
+        normalizedScores = np.repeat(range(MIN_SCORE, MAX_SCORE + 1), counts.astype(int))
+        plt.hist(normalizedScores, range=[MIN_SCORE, MAX_SCORE])
         plt.title('Normalized Ranking Distribution')
         plt.xlabel('Ranking')
         plt.ylabel('Number of Scores')
@@ -49,7 +51,7 @@ def cleanNormalDistributionCounts(rawScores, numEntriesToRank, samplesGenerated)
     counts = np.round(1.0 * numEntriesToRank * rawScores / samplesGenerated)
     countDifference = numEntriesToRank - np.sum(counts)
 
-    scoreDist = np.repeat(range(10), rawScores.astype(int))
+    scoreDist = np.repeat(range(MAX_SCORE - MIN_SCORE + 1), rawScores.astype(int))
     # if we need to rank more entries
     while countDifference > 0:
         scoreToAdd = random.choice(scoreDist)
@@ -92,7 +94,7 @@ def getCountOfEachRanking(scores):
     unique, counts= np.unique(scores, return_counts=True)
     # we need to sanitize to ensure that all possible scores are represented.
     # if some number doesn't appear, we assign a count of 0
-    rankings = range(1, 11)
+    rankings = range(MIN_SCORE, MAX_SCORE + 1)
 
     countDict = dict(zip(unique, counts))
     for r in rankings:
@@ -153,8 +155,6 @@ if __name__ == "__main__":
     
 
     ## validation
-
-    ## todo: replace ideal dist with truncated normal dist with https://stackoverflow.com/questions/41316068/truncated-normal-distribution-with-scipy-in-python
     verifyCur = verifyTotalScores(curCounts)
     verifyNormalized = verifyTotalScores(normalizedCounts)
 

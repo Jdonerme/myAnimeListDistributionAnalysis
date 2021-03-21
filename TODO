@@ -1,2 +1,1 @@
 Improve the printChangeMessage to include which scores should be changed to make the suggested printChangeMessage
-remove magic numbers for upper / lower bounds
