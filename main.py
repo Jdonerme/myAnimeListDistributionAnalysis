@@ -10,6 +10,7 @@ MIN_SCORE = 1
 def usage():
     msg = "\nusage: python main.py MyAnimeListExportFile.xml (optionalGraphFlag)\n"
     print msg
+
 def getCurrentDistribution(scores, showGraph = True):
     hist, bin_edges = np.histogram(scores, density=True)
     counts = getCountOfEachRanking(scores)
@@ -31,9 +32,10 @@ def getNormalizedDistribution(scores, showGraph = True):
 
     numEntriesToRank = len(scores)
     counts = cleanNormalDistributionCounts(counts, numEntriesToRank, samples)
+    counts = np.rint(counts).astype(int)
 
     if showGraph:
-        normalizedScores = np.repeat(range(MIN_SCORE, MAX_SCORE + 1), counts.astype(int))
+        normalizedScores = np.repeat(range(MIN_SCORE, MAX_SCORE + 1), counts)
         plt.hist(normalizedScores, range=[MIN_SCORE, MAX_SCORE])
         plt.title('Normalized Ranking Distribution')
         plt.xlabel('Ranking')
@@ -52,16 +54,13 @@ def cleanNormalDistributionCounts(rawScores, numEntriesToRank, samplesGenerated)
     countDifference = numEntriesToRank - np.sum(counts)
 
     scoreDist = np.repeat(range(MAX_SCORE - MIN_SCORE + 1), rawScores.astype(int))
-    # if we need to rank more entries
-    while countDifference > 0:
-        scoreToAdd = random.choice(scoreDist)
-        counts[scoreToAdd] += 1
-        countDifference -= 1
-    # if we've ranked too many entries
-    while countDifference < 0:
-        scoreToDrop = random.choice(scoreDist)
-        counts[scoreToDrop] -= 1
-        countDifference += 1
+    # if we need to rank more entries or fewer entries, make the changes 1 at a time
+    while countDifference != 0:
+        changeNeeded = np.sign(countDifference)
+        scoreToChange = random.choice(scoreDist)
+        counts[scoreToChange] += changeNeeded
+        countDifference -= changeNeeded
+
     return counts
 
 
@@ -103,6 +102,7 @@ def findScoresToChange(curCounts, normalizedCounts):
                     if (newCounts[changeDirection[0]] <= 0):
                         continue
 
+                    # if we skipped more than one ranking, log a change for intermediary values that we changed through as well
                     for k in range(changeDirection[0], changeDirection[1], -1 * direction):
                         changeMap[k][k - 1 * direction] += 1
 
@@ -141,7 +141,7 @@ def printChangeMessage(diff):
         print (message)
     print ('\n')
 
-
+# calculate the total nnumber of points allocated
 def verifyTotalScores(scoreDistribution):
     totalPoints = 0
     for i in range(len(scoreDistribution)):
@@ -185,8 +185,6 @@ if __name__ == "__main__":
     # get distributions
     curCounts = getCurrentDistribution(scores, showGraph)
     normalizedCounts = getNormalizedDistribution(scores, showGraph)
-    normalizedCounts *= (1.0 * np.sum(curCounts) / np.sum(normalizedCounts))
-    normalizedCounts = np.rint(normalizedCounts).astype(int)
 
     print ('Current Count of Each Ranking:')
     print curCounts
@@ -199,9 +197,8 @@ if __name__ == "__main__":
     print ('Difference Between Normalized Distribution Ranking Counts and Current Ranking Counts')
     print (diff)
     if (np.sum(diff) != 0):
-        print ('Difference Between Number of Entries Rahnked for Normalized Distribution vs Current')
+        print ('Difference Between Number of Entries Ranked for Normalized Distribution vs Current')
         print np.sum(diff)
-        print ('2349034') * 25
 
 
 
