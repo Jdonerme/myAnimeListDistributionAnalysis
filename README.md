@@ -1,7 +1,7 @@
 For fun project to analyze compare the distribution of myanimelist scores to a normal distribution. Helpful if you want to normalize your rankings.
 
 use:
-python main.py exportList.xml (showGraph)
+python main.py exportList.xml (showGraph <- provide any second arguement to display the graph)
 
 If any arguments, are given past the initial xml file, a histrogram of the score distributions will be plotted.
 
